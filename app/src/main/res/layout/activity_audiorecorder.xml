@@ -41,10 +41,28 @@
         android:id="@+id/fullscreen_content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center"
-        android:keepScreenOn="true"
+
         android:background="@color/colorPrimary"
-        android:orientation="vertical"
-    />
+        android:keepScreenOn="true"
+        android:orientation="vertical">
+
+        <Button
+            android:onClick="onAudioRecorderStart"
+            android:text="record start"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:onClick="onAudioRecorderStop"
+            android:text="record stop"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:onClick="onPlayAudio"
+            android:text="play audio"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
 
 </FrameLayout>

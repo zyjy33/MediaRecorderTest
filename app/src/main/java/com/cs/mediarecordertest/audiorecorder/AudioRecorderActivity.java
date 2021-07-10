@@ -1,92 +1,49 @@
 package com.cs.mediarecordertest.audiorecorder;
 
-import android.annotation.SuppressLint;
+import android.media.MediaPlayer;
+import android.media.MediaRecorder;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.Toast;
+
+import com.cs.mediarecordertest.R;
+
+import java.io.File;
+import java.io.IOException;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.os.Bundle;
-import android.os.Handler;
-import android.view.MotionEvent;
-import android.view.View;
-
-import com.cs.mediarecordertest.R;
+import static android.os.Environment.DIRECTORY_MOVIES;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
  * status bar and navigation/system bar) with user interaction.
  */
 public class AudioRecorderActivity extends AppCompatActivity {
-    /**
-     * Whether or not the system UI should be auto-hidden after
-     * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
-     */
-    private static final boolean AUTO_HIDE = true;
+    private static final String TAG = "AudioRecorderActivity";
 
-    /**
-     * If {@link #AUTO_HIDE} is set, the number of milliseconds to wait after
-     * user interaction before hiding the system UI.
-     */
-    private static final int AUTO_HIDE_DELAY_MILLIS = 3000;
 
-    /**
-     * Some older devices needs a small delay between UI widget updates
-     * and a change of the status and navigation bar.
-     */
-    private static final int UI_ANIMATION_DELAY = 300;
-    private final Handler mHideHandler = new Handler();
-    private View mContentView;
-    private final Runnable mHidePart2Runnable = new Runnable() {
-        @SuppressLint("InlinedApi")
-        @Override
-        public void run() {
-            // Delayed removal of status and navigation bar
+    private String mPath;
+    private MediaPlayer player;
+    private String mFileName;
+    private MediaRecorder recorder;
+    public static final int RECORDING = 1;
+    public static final int PLAYING = 2;
+    public static final int IDLE = 0;
 
-            // Note that some of these constants are new as of API 16 (Jelly Bean)
-            // and API 19 (KitKat). It is safe to use them, as they are inlined
-            // at compile-time and do nothing on earlier devices.
-            mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
-                    | View.SYSTEM_UI_FLAG_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
-        }
-    };
-    private View mControlsView;
-    private final Runnable mShowPart2Runnable = new Runnable() {
-        @Override
-        public void run() {
-            // Delayed display of UI elements
-            ActionBar actionBar = getSupportActionBar();
-            if (actionBar != null) {
-                actionBar.show();
-            }
-            mControlsView.setVisibility(View.VISIBLE);
-        }
-    };
-
-    private final Runnable mHideRunnable = new Runnable() {
-        @Override
-        public void run() {
-            hide();
-        }
-    };
+    private int mState = IDLE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_audiorecorder);
-        mControlsView = findViewById(R.id.fullscreen_content_controls);
-        mContentView = findViewById(R.id.fullscreen_content);
+        hide();
+        initView();
 
     }
 
-    @Override
-    protected void onPostCreate(Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-        delayedHide(100);
-    }
 
     private void hide() {
         // Hide UI first
@@ -94,16 +51,109 @@ public class AudioRecorderActivity extends AppCompatActivity {
         if (actionBar != null) {
             actionBar.hide();
         }
-        mControlsView.setVisibility(View.GONE);
-        mHideHandler.removeCallbacks(mShowPart2Runnable);
-        mHideHandler.postDelayed(mHidePart2Runnable, UI_ANIMATION_DELAY);
+
     }
-    /**
-     * Schedules a call to hide() in delay milliseconds, canceling any
-     * previously scheduled calls.
-     */
-    private void delayedHide(int delayMillis) {
-        mHideHandler.removeCallbacks(mHideRunnable);
-        mHideHandler.postDelayed(mHideRunnable, delayMillis);
+
+    private boolean checkState() {
+
+        switch (mState) {
+            case RECORDING:
+                Toast.makeText(this, "当前录制状态，请先结束录制！", Toast.LENGTH_SHORT).show();
+                return false;
+            case PLAYING:
+                Toast.makeText(this, "当前播放状态，请先结束播放！", Toast.LENGTH_SHORT).show();
+                return false;
+
+
+        }
+
+        return true;
     }
+
+    private void initView() {
+        File filesDir = getExternalFilesDir(DIRECTORY_MOVIES);
+        mPath = filesDir.getAbsolutePath();
+        mFileName = mPath + "/audio_1.3gp";
+    }
+
+
+    public void startRecording() {
+        if (!checkState()) {
+            return;
+        }
+        mState = RECORDING;
+        recorder = new MediaRecorder();
+        recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+        recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+        recorder.setOutputFile(mFileName);
+        recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+
+        try {
+            recorder.prepare();
+        } catch (IOException e) {
+            Log.e(TAG, "prepare() failed");
+            mState = IDLE;
+        }
+
+        recorder.start();
+    }
+
+    public void stopRecording() {
+
+        if (recorder != null) {
+            recorder.stop();
+            recorder.release();
+            recorder = null;
+        }else{
+            Toast.makeText(this, "当前已是空闲状态！", Toast.LENGTH_SHORT).show();
+        }
+        mState = IDLE;
+    }
+
+
+    public void onAudioRecorderStart(View view) {
+        startRecording();
+    }
+
+    public void onAudioRecorderStop(View view) {
+        stopRecording();
+    }
+
+    public void onPlayAudio(View view) {
+        if (!checkState()) {
+            return;
+        }
+        mState = PLAYING;
+        player = new MediaPlayer();
+        try {
+            player.setDataSource(mFileName);
+            player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mp) {
+                    mState = IDLE;
+                }
+            });
+            player.prepare();
+            player.start();
+
+        } catch (IOException e) {
+            Log.e(TAG, "prepare() failed");
+            mState = IDLE;
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (recorder != null) {
+            recorder.release();
+            recorder = null;
+        }
+
+        if (player != null) {
+            player.release();
+            player = null;
+        }
+    }
+
 }
