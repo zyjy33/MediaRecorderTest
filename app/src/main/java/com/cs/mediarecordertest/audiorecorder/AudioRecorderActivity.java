@@ -6,9 +6,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
-
 import com.cs.mediarecordertest.R;
-
 import java.io.File;
 import java.io.IOException;
 
@@ -17,10 +15,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import static android.os.Environment.DIRECTORY_MOVIES;
 
-/**
- * An example full-screen activity that shows and hides the system UI (i.e.
- * status bar and navigation/system bar) with user interaction.
- */
 public class AudioRecorderActivity extends AppCompatActivity {
     private static final String TAG = "AudioRecorderActivity";
 
@@ -74,6 +68,7 @@ public class AudioRecorderActivity extends AppCompatActivity {
         File filesDir = getExternalFilesDir(DIRECTORY_MOVIES);
         mPath = filesDir.getAbsolutePath();
         mFileName = mPath + "/audio_1.3gp";
+        Log.d(TAG, "initView: path = " +mFileName);
     }
 
 
@@ -87,6 +82,7 @@ public class AudioRecorderActivity extends AppCompatActivity {
         recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
         recorder.setOutputFile(mFileName);
         recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+
 
         try {
             recorder.prepare();

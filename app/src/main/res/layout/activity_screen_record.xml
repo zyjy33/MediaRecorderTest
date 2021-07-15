@@ -4,26 +4,26 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".MainActivity">
+    tools:context=".screenrecorder.ScreenRecordActivity">
+    <TextView
+        android:gravity="center"
+        android:id="@+id/record_time"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp" />
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:onClick="onScreenRecordStart"
+        android:text="Record Start" />
 
     <Button
-        android:layout_marginTop="10dp"
-        android:text="Audio Recorder"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:onClick="onAudioRecorder"/>
-    <Button
         android:layout_marginTop="10dp"
-        android:text="Camera Recorder"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:onClick="onCameraRecord"/>
+        android:onClick="onScreenRecordStop"
+        android:text="Record Stop" />
 
-    <Button
-        android:layout_marginTop="10dp"
-        android:text="Screen Recorder"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:onClick="onScreenRecord"/>
 
 </LinearLayout>
